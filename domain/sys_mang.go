@@ -10,3 +10,7 @@ type Menu struct {
 	ParentId  int64          `gorm:"parent_id" json:"parent_id"`
 	Meta      datatypes.JSON `gorm:"type:jsonb;column:meta" json:meta`
 }
+
+func (Menu) TableName() string {
+	return "tobe_menu"
+}
