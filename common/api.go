@@ -1,14 +1,14 @@
 package common
 
 type ToGoResponse struct {
-	Code    int         `json:"code"`
-	Msg     string      `json:"msg"`
-	Data    interface{} `json:"data"`
-	Obj     interface{} `json:"obj"`
-	Success bool        `json:"success"`
+	Code    int    `json:"code"`
+	Msg     string `json:"msg"`
+	Data    any    `json:"data"`
+	Obj     any    `json:"obj"`
+	Success bool   `json:"success"`
 }
 
-func Success(data interface{}) ToGoResponse {
+func Success(data any) ToGoResponse {
 	return ToGoResponse{Code: 200, Data: data, Success: true}
 }
 
@@ -22,4 +22,9 @@ func Error(msg string) ToGoResponse {
 
 func Exception(msg string, code int) ToGoResponse {
 	return ToGoResponse{Code: code, Msg: msg, Success: false}
+}
+
+type PageResp struct {
+	Data  any
+	Count int64
 }

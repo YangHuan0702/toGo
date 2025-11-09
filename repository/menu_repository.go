@@ -10,20 +10,20 @@ import (
 
 type MenuRepositoryInterface interface {
 
-	// 创建菜单
-	createMenu(domain.Menu) (int64, common.ApiException)
+	// CreateMenu 创建菜单
+	CreateMenu(domain.Menu) (int64, common.ApiException)
 
-	// 修改菜单
-	updateMenu(domain.Menu) common.ApiException
+	// UpdateMenu 修改菜单
+	UpdateMenu(domain.Menu) common.ApiException
 
-	// 删除菜单
-	deleteMenu(int64) (common.ApiException, *domain.Menu)
+	// DeleteMenu 删除菜单
+	DeleteMenu(int64) (common.ApiException, *domain.Menu)
 
-	// 通过ID查询菜单
-	getById(int64) *domain.Menu
+	// GetById 通过ID查询菜单
+	GetById(int64) *domain.Menu
 
-	// 通过菜单名称进行分类查询
-	pageList(string, int, int) []domain.Menu
+	// PageList 通过菜单名称进行分类查询
+	PageList(string, int, int) common.PageResp
 }
 
 type MenuRepository struct {
@@ -31,14 +31,14 @@ type MenuRepository struct {
 	MenuRepositoryInterface
 }
 
-func (rep *MenuRepository) createMenu(menu *domain.Menu) (int64, common.ApiException) {
+func (rep *MenuRepository) CreateMenu(menu *domain.Menu) (int64, common.ApiException) {
 	if menu == nil {
 		return -1, common.ExceptionRespMap[common.NilParams]
 	}
 
 	// 父级菜单是否存在
 	if menu.ParentId != 0 {
-		parent := rep.getById(menu.ParentId)
+		parent := rep.GetById(menu.ParentId)
 		if parent == nil {
 			return -1, common.ExceptionRespMap[common.NotFindParentMenu]
 		}
@@ -48,15 +48,15 @@ func (rep *MenuRepository) createMenu(menu *domain.Menu) (int64, common.ApiExcep
 	return menu.Id, nil
 }
 
-func (rep *MenuRepository) updateMenu(menu domain.Menu) common.ApiException {
+func (rep *MenuRepository) UpdateMenu(menu domain.Menu) common.ApiException {
 	if menu.ParentId != 0 {
-		parent := rep.getById(menu.ParentId)
+		parent := rep.GetById(menu.ParentId)
 		if parent == nil {
 			return common.ExceptionRespMap[common.NotFindParentMenu]
 		}
 	}
 
-	self := rep.getById(menu.Id)
+	self := rep.GetById(menu.Id)
 	if self == nil {
 		return common.ExceptionRespMap[common.NotFindMenu]
 	}
@@ -65,8 +65,8 @@ func (rep *MenuRepository) updateMenu(menu domain.Menu) common.ApiException {
 	return nil
 }
 
-func (rep *MenuRepository) deleteMenu(id int64) (common.ApiException, *domain.Menu) {
-	target := rep.getById(id)
+func (rep *MenuRepository) DeleteMenu(id int64) (common.ApiException, *domain.Menu) {
+	target := rep.GetById(id)
 
 	if target == nil {
 		return common.ExceptionRespMap[common.NotFindMenu], nil
@@ -76,13 +76,13 @@ func (rep *MenuRepository) deleteMenu(id int64) (common.ApiException, *domain.Me
 	return nil, target
 }
 
-func (rep *MenuRepository) getById(id int64) *domain.Menu {
+func (rep *MenuRepository) GetById(id int64) *domain.Menu {
 	menu := &domain.Menu{}
 	rep.db.Where("id = ?", id).First(&menu)
 	return menu
 }
 
-func (rep *MenuRepository) pageList(menuName string, pageNo int, pageSize int) []domain.Menu {
+func (rep *MenuRepository) PageList(menuName string, pageNo int, pageSize int) common.PageResp {
 	var count int64 = 0
 	var users []domain.Menu
 	if menuName != "" {
@@ -92,5 +92,5 @@ func (rep *MenuRepository) pageList(menuName string, pageNo int, pageSize int) [
 		rep.db.Model(&domain.Menu{}).Count(&count)
 		rep.db.Limit(pageSize).Offset((pageNo - 1) * pageSize).Find(&users)
 	}
-	return users
+	return common.PageResp{Data: users, Count: count}
 }
