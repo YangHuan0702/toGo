@@ -8,6 +8,11 @@ import (
 	"gorm.io/gorm"
 )
 
+func GetMenuRepository() MenuRepository {
+	target := MenuRepository{db: GetDBConn()}
+	return target
+}
+
 type MenuRepositoryInterface interface {
 
 	// CreateMenu 创建菜单

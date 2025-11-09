@@ -6,6 +6,11 @@ import (
 	"toGO/repository"
 )
 
+func GetMenuController() MenuController {
+	menuController := MenuController{menuService: repository.GetMenuRepository()}
+	return menuController
+}
+
 type MenuController struct {
 	menuService repository.MenuRepository
 }
