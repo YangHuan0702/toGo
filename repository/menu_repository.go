@@ -29,6 +29,9 @@ type MenuRepositoryInterface interface {
 
 	// PageList 通过菜单名称进行分类查询
 	PageList(string, int, int) common.PageResp
+
+	// ListMenuForName 根据名称查询所有的菜单数据
+	ListMenuForName(string) []domain.Menu
 }
 
 type MenuRepository struct {
@@ -89,13 +92,23 @@ func (rep *MenuRepository) GetById(id int64) *domain.Menu {
 
 func (rep *MenuRepository) PageList(menuName string, pageNo int, pageSize int) common.PageResp {
 	var count int64 = 0
-	var users []domain.Menu
+	var menus []domain.Menu
 	if menuName != "" {
 		rep.db.Model(&domain.Menu{}).Where("name = ?", menuName).Count(&count)
-		rep.db.Limit(pageSize).Offset((pageNo-1)*pageSize).Where("name = ?", menuName).Find(&users)
+		rep.db.Limit(pageSize).Offset((pageNo-1)*pageSize).Where("name = ?", menuName).Find(&menus)
 	} else {
 		rep.db.Model(&domain.Menu{}).Count(&count)
-		rep.db.Limit(pageSize).Offset((pageNo - 1) * pageSize).Find(&users)
+		rep.db.Limit(pageSize).Offset((pageNo - 1) * pageSize).Find(&menus)
 	}
-	return common.PageResp{Data: users, Count: count}
+	return common.PageResp{Data: menus, Count: count}
+}
+
+func (rep *MenuRepository) ListMenuForName(name string) []domain.Menu {
+	var menus []domain.Menu
+	tx := rep.db.Model(&domain.Menu{})
+	if name != "" {
+		tx.Where("name = ?", name)
+	}
+	tx.Find(&menus)
+	return menus
 }

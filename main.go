@@ -25,6 +25,12 @@ func main() {
 
 	})
 
+	app.GET("/menu/list", func(c *gin.Context) {
+		name := c.Param("name")
+		resp := menuController.List(name)
+		c.JSON(http.StatusOK, resp)
+	})
+
 	_ = app.Run(":8000")
 
 }
