@@ -25,6 +25,9 @@ func Exception(msg string, code int) ToGoResponse {
 }
 
 type PageResp struct {
-	Data  any
-	Count int64
+	Data      any   `json:"data"`
+	Count     int64 `json:"count"`
+	CurPage   int   `json:"curPage"`
+	PageSize  int   `json:"pageSize"`
+	PageCount int64 `json:"pageCount"`
 }

@@ -16,7 +16,7 @@ func GetMenuRepository() MenuRepository {
 type MenuRepositoryInterface interface {
 
 	// CreateMenu 创建菜单
-	CreateMenu(domain.Menu) (int64, common.ApiException)
+	CreateMenu(*domain.Menu) (int64, common.ApiException)
 
 	// UpdateMenu 修改菜单
 	UpdateMenu(domain.Menu) common.ApiException

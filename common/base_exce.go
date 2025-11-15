@@ -11,9 +11,11 @@ type ToBeException struct {
 const NilParams ExceptionCode = 500
 const NotFindMenu ExceptionCode = 1403
 const NotFindParentMenu ExceptionCode = 1413
+const NotFindPlan ExceptionCode = 2404
 
 var ExceptionRespMap = map[ExceptionCode]ApiException{
 	NilParams:         {Code: NilParams, Msg: "空值参数"},
 	NotFindMenu:       {Code: NotFindMenu, Msg: "找不到目标菜单"},
 	NotFindParentMenu: {Code: NotFindParentMenu, Msg: "找不到目标父级菜单"},
+	NotFindPlan:       {NotFindPlan, "目标计划不存在"},
 }
