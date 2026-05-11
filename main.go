@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 	"toGO/common"
 	"toGO/config"
 	"toGO/contr"
@@ -44,6 +45,33 @@ func main() {
 		name := c.Query("name")
 		resp := menuController.List(name)
 		c.JSON(http.StatusOK, resp)
+	})
+
+	app.POST("/menu/create", func(c *gin.Context) {
+		params := req.MenuSaveRequest{}
+		if err := c.ShouldBind(&params); err != nil {
+			c.JSON(http.StatusOK, common.Error("the body should be MenuSaveRequest"))
+		} else {
+			c.JSON(http.StatusOK, menuController.Create(params))
+		}
+	})
+
+	app.PUT("/menu/update", func(c *gin.Context) {
+		params := req.MenuSaveRequest{}
+		if err := c.ShouldBind(&params); err != nil {
+			c.JSON(http.StatusOK, common.Error("the body should be MenuSaveRequest"))
+		} else {
+			c.JSON(http.StatusOK, menuController.Update(params))
+		}
+	})
+
+	app.DELETE("/menu/delete/:id", func(c *gin.Context) {
+		id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+		if err != nil {
+			c.JSON(http.StatusOK, common.Error("invalid menu id"))
+		} else {
+			c.JSON(http.StatusOK, menuController.Delete(id))
+		}
 	})
 
 	app.GET("/dashboard/home", func(c *gin.Context) {

@@ -41,6 +41,9 @@ func (rep *MenuRepository) CreateMenu(menu *domain.Menu) (int64, common.ApiExcep
 	if menu == nil {
 		return -1, common.ExceptionRespMap[common.NilParams]
 	}
+	if menu.ParentId != 0 && rep.GetById(menu.ParentId) == nil {
+		return -1, common.ExceptionRespMap[common.NotFindParentMenu]
+	}
 
 	var maxID int64
 	for _, row := range menuRows {
@@ -54,6 +57,12 @@ func (rep *MenuRepository) CreateMenu(menu *domain.Menu) (int64, common.ApiExcep
 }
 
 func (rep *MenuRepository) UpdateMenu(menu domain.Menu) common.ApiException {
+	if menu.ParentId != 0 && rep.GetById(menu.ParentId) == nil {
+		return common.ExceptionRespMap[common.NotFindParentMenu]
+	}
+	if menu.Id == menu.ParentId {
+		return common.ExceptionRespMap[common.NotFindParentMenu]
+	}
 	for idx := range menuRows {
 		if menuRows[idx].Id == menu.Id {
 			menuRows[idx] = menu
@@ -64,6 +73,21 @@ func (rep *MenuRepository) UpdateMenu(menu domain.Menu) common.ApiException {
 }
 
 func (rep *MenuRepository) DeleteMenu(id int64) (common.ApiException, *domain.Menu) {
+	target := rep.GetById(id)
+	if target == nil {
+		return common.ExceptionRespMap[common.NotFindMenu], nil
+	}
+	filtered := make([]domain.Menu, 0, len(menuRows))
+	for _, menu := range menuRows {
+		if menu.Id != id && menu.ParentId != id {
+			filtered = append(filtered, menu)
+		}
+	}
+	menuRows = filtered
+	return nil, target
+}
+
+func (rep *MenuRepository) deleteMenuOld(id int64) (common.ApiException, *domain.Menu) {
 	for idx := range menuRows {
 		if menuRows[idx].Id == id {
 			menu := menuRows[idx]
