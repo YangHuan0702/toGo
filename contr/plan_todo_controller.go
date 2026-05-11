@@ -18,6 +18,14 @@ func (contr *PlanTodoController) PageList(params req.TodoPageRequest) common.ToG
 	return common.Success(contr.service.PageList(params))
 }
 
+func (contr *PlanTodoController) CreatePlan(params req.PlanCreateRequest) common.ToGoResponse {
+	plan, err := contr.service.CreatePlanWithTodos(params)
+	if err != nil {
+		return common.Error(err.Error())
+	}
+	return common.Success(plan)
+}
+
 func (contr *PlanTodoController) PlanInfo(id int64) common.ToGoResponse {
 	plan := contr.service.GetPlanForId(id)
 	return common.Success(plan)

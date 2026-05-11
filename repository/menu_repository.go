@@ -1,41 +1,39 @@
 package repository
 
 import (
-	"toGO/domain"
-
+	"strings"
 	"toGO/common"
-
-	"gorm.io/gorm"
+	"toGO/domain"
 )
 
-func GetMenuRepository() MenuRepository {
-	target := MenuRepository{db: GetDBConn()}
-	return target
-}
-
 type MenuRepositoryInterface interface {
-
-	// CreateMenu 创建菜单
 	CreateMenu(*domain.Menu) (int64, common.ApiException)
-
-	// UpdateMenu 修改菜单
 	UpdateMenu(domain.Menu) common.ApiException
-
-	// DeleteMenu 删除菜单
 	DeleteMenu(int64) (common.ApiException, *domain.Menu)
-
-	// GetById 通过ID查询菜单
 	GetById(int64) *domain.Menu
-
-	// PageList 通过菜单名称进行分类查询
 	PageList(string, int, int) common.PageResp
-
-	// ListMenuForName 根据名称查询所有的菜单数据
 	ListMenuForName(string) []domain.Menu
 }
 
+var menuRows = []domain.Menu{
+	{Id: 1, Name: "待办计划管理", Path: "/todo", Component: "Layout", ParentId: 0},
+	{Id: 2, Name: "计划概览", Path: "/todo/overview", Component: "todo/overview", ParentId: 1},
+	{Id: 3, Name: "我的计划", Path: "/todo/list", Component: "todo/list", ParentId: 1},
+	{Id: 4, Name: "任务看板", Path: "/todo/board", Component: "todo/board", ParentId: 1},
+	{Id: 5, Name: "计划日历", Path: "/todo/calendar", Component: "todo/calendar", ParentId: 1},
+	{Id: 6, Name: "复盘回顾", Path: "/todo/review", Component: "todo/review", ParentId: 1},
+	{Id: 7, Name: "学习编排", Path: "/learning", Component: "Layout", ParentId: 0},
+	{Id: 8, Name: "学习路径", Path: "/learning/path", Component: "learning/path", ParentId: 7},
+	{Id: 9, Name: "学习计划", Path: "/learning/schedule", Component: "learning/schedule", ParentId: 7},
+	{Id: 10, Name: "学习资料", Path: "/learning/materials", Component: "learning/materials", ParentId: 7},
+	{Id: 11, Name: "复习记录", Path: "/learning/review", Component: "learning/review", ParentId: 7},
+}
+
+func GetMenuRepository() MenuRepository {
+	return MenuRepository{}
+}
+
 type MenuRepository struct {
-	db *gorm.DB
 	MenuRepositoryInterface
 }
 
@@ -44,71 +42,82 @@ func (rep *MenuRepository) CreateMenu(menu *domain.Menu) (int64, common.ApiExcep
 		return -1, common.ExceptionRespMap[common.NilParams]
 	}
 
-	// 父级菜单是否存在
-	if menu.ParentId != 0 {
-		parent := rep.GetById(menu.ParentId)
-		if parent == nil {
-			return -1, common.ExceptionRespMap[common.NotFindParentMenu]
+	var maxID int64
+	for _, row := range menuRows {
+		if row.Id > maxID {
+			maxID = row.Id
 		}
 	}
-
-	rep.db.Create(menu)
+	menu.Id = maxID + 1
+	menuRows = append(menuRows, *menu)
 	return menu.Id, nil
 }
 
 func (rep *MenuRepository) UpdateMenu(menu domain.Menu) common.ApiException {
-	if menu.ParentId != 0 {
-		parent := rep.GetById(menu.ParentId)
-		if parent == nil {
-			return common.ExceptionRespMap[common.NotFindParentMenu]
+	for idx := range menuRows {
+		if menuRows[idx].Id == menu.Id {
+			menuRows[idx] = menu
+			return nil
 		}
 	}
-
-	self := rep.GetById(menu.Id)
-	if self == nil {
-		return common.ExceptionRespMap[common.NotFindMenu]
-	}
-
-	rep.db.Save(&menu)
-	return nil
+	return common.ExceptionRespMap[common.NotFindMenu]
 }
 
 func (rep *MenuRepository) DeleteMenu(id int64) (common.ApiException, *domain.Menu) {
-	target := rep.GetById(id)
-
-	if target == nil {
-		return common.ExceptionRespMap[common.NotFindMenu], nil
+	for idx := range menuRows {
+		if menuRows[idx].Id == id {
+			menu := menuRows[idx]
+			menuRows = append(menuRows[:idx], menuRows[idx+1:]...)
+			return nil, &menu
+		}
 	}
-
-	rep.db.Delete(target)
-	return nil, target
+	return common.ExceptionRespMap[common.NotFindMenu], nil
 }
 
 func (rep *MenuRepository) GetById(id int64) *domain.Menu {
-	menu := &domain.Menu{}
-	rep.db.Where("id = ?", id).First(&menu)
-	return menu
+	for idx := range menuRows {
+		if menuRows[idx].Id == id {
+			menu := menuRows[idx]
+			return &menu
+		}
+	}
+	return nil
 }
 
 func (rep *MenuRepository) PageList(menuName string, pageNo int, pageSize int) common.PageResp {
-	var count int64 = 0
-	var menus []domain.Menu
-	if menuName != "" {
-		rep.db.Model(&domain.Menu{}).Where("name = ?", menuName).Count(&count)
-		rep.db.Limit(pageSize).Offset((pageNo-1)*pageSize).Where("name = ?", menuName).Find(&menus)
-	} else {
-		rep.db.Model(&domain.Menu{}).Count(&count)
-		rep.db.Limit(pageSize).Offset((pageNo - 1) * pageSize).Find(&menus)
+	if pageNo <= 0 {
+		pageNo = 1
 	}
-	return common.PageResp{Data: menus, Count: count}
+	if pageSize <= 0 {
+		pageSize = 10
+	}
+
+	rows := rep.ListMenuForName(menuName)
+	count := int64(len(rows))
+	start := (pageNo - 1) * pageSize
+	if start > len(rows) {
+		start = len(rows)
+	}
+	end := start + pageSize
+	if end > len(rows) {
+		end = len(rows)
+	}
+
+	return common.PageResp{
+		Data:      rows[start:end],
+		Count:     count,
+		CurPage:   pageNo,
+		PageSize:  pageSize,
+		PageCount: count,
+	}
 }
 
 func (rep *MenuRepository) ListMenuForName(name string) []domain.Menu {
-	var menus []domain.Menu
-	tx := rep.db.Model(&domain.Menu{})
-	if name != "" {
-		tx.Where("name = ?", name)
+	menus := make([]domain.Menu, 0)
+	for _, menu := range menuRows {
+		if name == "" || strings.Contains(strings.ToLower(menu.Name), strings.ToLower(name)) {
+			menus = append(menus, menu)
+		}
 	}
-	tx.Find(&menus)
 	return menus
 }

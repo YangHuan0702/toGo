@@ -8,6 +8,7 @@ type Plan struct {
 	PlanFinishDate string `gorm:"plan_finish_date" json:"planFinishDate"`
 	PlanStartDate  string `gorm:"plan_start_date" json:"planStartDate"`
 	PlanTag        string `gorm:"plan_tag" json:"planTag"`
+	Items          []Todo `gorm:"-" json:"items,omitempty"`
 }
 
 func (Plan) TableName() string {
