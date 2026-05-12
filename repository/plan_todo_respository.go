@@ -27,20 +27,10 @@ var planStore = struct {
 	plans      []domain.Plan
 	todos      []domain.Todo
 }{
-	nextPlanID: 4,
-	nextTodoID: 6,
-	plans: []domain.Plan{
-		{Id: 1, UserName: "前端", Title: "完善创建计划弹窗", Content: "补齐校验、待办列表和提交反馈。", PlanStartDate: "2026-05-08", PlanFinishDate: "2026-05-15", PlanTag: "前端,联调"},
-		{Id: 2, UserName: "后端", Title: "联调分页查询接口", Content: "统一分页字段和错误提示。", PlanStartDate: "2026-05-09", PlanFinishDate: "2026-05-12", PlanTag: "后端,P1"},
-		{Id: 3, UserName: "测试", Title: "移动端布局检查", Content: "重点检查菜单、表格和弹窗宽度。", PlanStartDate: "2026-05-01", PlanFinishDate: "2026-05-07", PlanTag: "测试,复盘"},
-	},
-	todos: []domain.Todo{
-		{Id: 1, PlanId: 1, Title: "基础表单校验", Remark: "必填和日期格式", Content: "为计划创建表单补充完整校验。", StartDate: "2026-05-08", EndDate: "2026-05-10"},
-		{Id: 2, PlanId: 1, Title: "待办明细录入", Remark: "支持多条", Content: "提交时携带 items 数组。", StartDate: "2026-05-10", EndDate: "2026-05-15"},
-		{Id: 3, PlanId: 2, Title: "分页假数据", Remark: "不连接数据库", Content: "根据前端字段返回 planTitle 和 todoContent。", StartDate: "2026-05-09", EndDate: "2026-05-11"},
-		{Id: 4, PlanId: 2, Title: "创建计划接口", Remark: "内存追加", Content: "支持 /plan/create 保存计划和待办。", StartDate: "2026-05-11", EndDate: "2026-05-12"},
-		{Id: 5, PlanId: 3, Title: "断点检查", Remark: "手机和桌面", Content: "检查列表页、菜单和弹窗布局。", StartDate: "2026-05-01", EndDate: "2026-05-07"},
-	},
+	nextPlanID: 1,
+	nextTodoID: 1,
+	plans:      []domain.Plan{},
+	todos:      []domain.Todo{},
 }
 
 func GetPlanRepository() *PlanTodoRepository {

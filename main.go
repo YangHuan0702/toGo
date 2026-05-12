@@ -128,6 +128,22 @@ func main() {
 		}
 	})
 
+	app.POST("/ai/agent/plan", func(c *gin.Context) {
+		params := contr.AiAgentPlanRequest{}
+		if err := c.ShouldBindJSON(&params); err != nil {
+			c.JSON(http.StatusOK, common.Error("the body should be AiAgentPlanRequest"))
+			return
+		}
+
+		plan, err := contr.PlanAiAgent(params)
+		if err != nil {
+			c.JSON(http.StatusOK, common.Error(err.Error()))
+			return
+		}
+
+		c.JSON(http.StatusOK, plan)
+	})
+
 	_ = app.Run(":8000")
 
 }
